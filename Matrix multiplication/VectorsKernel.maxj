@@ -1,0 +1,42 @@
+package vectors;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVector;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEVectorType;
+
+class VectorsKernel extends Kernel {
+
+	VectorsKernel(KernelParameters parameters, int vectorSize) {
+		super(parameters);
+
+		DFEVectorType<DFEVar> vectorType =
+			new DFEVectorType<DFEVar>(dfeUInt(32), vectorSize);
+
+		// Input
+		DFEVector<DFEVar> inMatrix1 = io.input("inMatrix1", vectorType);
+		DFEVector<DFEVar> inMatrix2 = io.input("inMatrix2", vectorType);
+
+		DFEVector<DFEVar> outMatrix =
+			vectorType.newInstance(this);
+
+        int size = (int)(Math.sqrt(vectorSize));
+
+        // Matrix multiplication
+		for (int i = 0; i < size; i++){
+		    for (int j = 0; j < size; j++){
+		        DFEVar sum = constant.var(dfeUInt(32), 0);
+		        
+		        for (int k = 0; k < size; k++){
+		            sum += inMatrix1[i*size+k] * inMatrix2[k*size+j];
+		        }
+		        outMatrix[i*size + j] <== sum;
+		    }
+		}
+
+		//Output
+		io.output("outMatrix", outMatrix, vectorType);
+	}
+
+}
